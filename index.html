@@ -1,490 +1,1083 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zeyad Maeen — Freelance Services</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #060810;
-    --surface: #0d1117;
-    --surface2: #141b26;
-    --border: rgba(255,255,255,0.07);
-    --accent: #00e5ff;
-    --accent2: #7c3aed;
-    --text: #f0f4ff;
-    --muted: #7a8499;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body { font-family: 'DM Mono', monospace; background: var(--bg); color: var(--text); overflow-x: hidden; cursor: none; }
- 
-  /* CURSOR */
-  #cursor { position: fixed; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 99999; transform: translate(-50%,-50%); transition: width .2s, height .2s, opacity .2s; mix-blend-mode: screen; }
-  #cursor-ring { position: fixed; width: 40px; height: 40px; border: 1px solid rgba(0,229,255,.5); border-radius: 50%; pointer-events: none; z-index: 99998; transform: translate(-50%,-50%); transition: width .4s cubic-bezier(.25,.46,.45,.94), height .4s cubic-bezier(.25,.46,.45,.94); }
-  .cursor-big #cursor-ring { width: 60px; height: 60px; border-color: var(--accent); }
- 
-  /* CANVAS */
-  #particle-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .6; }
- 
-  /* NOISE */
-  body::before { content: ''; position: fixed; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E"); pointer-events: none; z-index: 9998; opacity: .35; }
- 
-  /* SCROLL REVEAL */
-  .reveal { opacity: 0; transform: translateY(40px); transition: opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
-  .reveal.visible { opacity: 1; transform: none; }
-  .reveal-left { opacity: 0; transform: translateX(-30px); transition: opacity .8s cubic-bezier(.16,1,.3,1), transform .8s cubic-bezier(.16,1,.3,1); }
-  .reveal-left.visible { opacity: 1; transform: none; }
- 
-  /* NAV */
-  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 8vw; transition: background .4s, backdrop-filter .4s, border-color .4s; border-bottom: 1px solid transparent; }
-  nav.scrolled { background: rgba(6,8,16,.9); backdrop-filter: blur(20px); border-color: var(--border); }
-  .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; }
-  .nav-logo span { color: var(--accent); }
-  .nav-links { display: flex; gap: 2rem; list-style: none; }
-  .nav-links a { text-decoration: none; color: var(--muted); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; transition: color .2s; position: relative; }
-  .nav-links a::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1px; background: var(--accent); transition: width .3s; }
-  .nav-links a:hover { color: var(--accent); }
-  .nav-links a:hover::after { width: 100%; }
- 
-  .btn-primary { display: inline-flex; align-items: center; gap: 10px; background: var(--accent); color: #060810; padding: 14px 28px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: .85rem; letter-spacing: .05em; text-transform: uppercase; text-decoration: none; border-radius: 4px; transition: transform .2s, box-shadow .2s; position: relative; overflow: hidden; }
-  .btn-primary::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,.2), transparent); transform: translateX(-100%); transition: transform .4s; }
-  .btn-primary:hover::before { transform: translateX(100%); }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,255,.4); }
- 
-  .btn-ghost { display: inline-flex; align-items: center; gap: 10px; background: transparent; color: var(--text); padding: 14px 28px; font-family: 'Syne', sans-serif; font-weight: 600; font-size: .85rem; letter-spacing: .05em; text-transform: uppercase; text-decoration: none; border: 1px solid var(--border); border-radius: 4px; transition: border-color .2s, color .2s, background .2s; }
-  .btn-ghost:hover { border-color: rgba(0,229,255,.4); color: var(--accent); background: rgba(0,229,255,.05); }
- 
-  /* HERO */
-  .hero { position: relative; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: 8rem 8vw 4rem; z-index: 1; }
-  .hero-orb { position: absolute; width: 700px; height: 700px; border-radius: 50%; background: radial-gradient(circle, rgba(0,229,255,.13) 0%, rgba(124,58,237,.09) 50%, transparent 70%); top: -150px; right: -150px; animation: orbFloat 8s ease-in-out infinite, orbMorph 12s ease-in-out infinite; pointer-events: none; filter: blur(1px); }
-  .hero-orb2 { position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(124,58,237,.12) 0%, transparent 70%); bottom: -50px; left: 15%; animation: orbFloat2 10s ease-in-out infinite, orbMorph2 15s ease-in-out infinite; pointer-events: none; filter: blur(2px); }
-  @keyframes orbFloat { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-20px,30px) scale(1.05)} 66%{transform:translate(20px,-15px) scale(.97)} }
-  @keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(30px,-20px) scale(1.08)} 66%{transform:translate(-10px,25px) scale(.95)} }
-  @keyframes orbMorph { 0%,100%{border-radius:50%} 25%{border-radius:60% 40% 55% 45%/50% 55% 45% 50%} 50%{border-radius:45% 55% 40% 60%/55% 45% 55% 45%} 75%{border-radius:55% 45% 60% 40%/45% 55% 45% 55%} }
-  @keyframes orbMorph2 { 0%,100%{border-radius:50%} 33%{border-radius:40% 60% 45% 55%/55% 45% 60% 40%} 66%{border-radius:60% 40% 50% 50%/40% 60% 45% 55%} }
- 
-  .status-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0,229,255,.08); border: 1px solid rgba(0,229,255,.2); border-radius: 100px; padding: 6px 16px; font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); margin-bottom: 2rem; animation: fadeSlideUp .6s ease both; }
-  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: blink 1.5s ease-in-out infinite; }
-  @keyframes blink { 0%,100%{opacity:1;box-shadow:0 0 8px var(--accent),0 0 16px var(--accent)} 50%{opacity:.3;box-shadow:none} }
- 
-  .hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(3rem,7vw,6.5rem); font-weight: 800; line-height: 1; letter-spacing: -.02em; animation: fadeSlideUp .7s .1s ease both; }
-  .glitch-word { position: relative; display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .glitch-word::before, .glitch-word::after { content: attr(data-text); position: absolute; left: 0; top: 0; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-  .glitch-word::before { animation: glitch1 4s infinite steps(1); clip-path: polygon(0 0,100% 0,100% 35%,0 35%); }
-  .glitch-word::after { animation: glitch2 4s infinite steps(1); clip-path: polygon(0 65%,100% 65%,100% 100%,0 100%); }
-  @keyframes glitch1 { 0%,94%,100%{transform:none;opacity:0} 95%{transform:translate(-3px,1px);opacity:.8;filter:hue-rotate(90deg)} 97%{transform:translate(3px,-1px);opacity:.8} 99%{transform:translate(0,2px);opacity:0} }
-  @keyframes glitch2 { 0%,94%,100%{transform:none;opacity:0} 96%{transform:translate(3px,-1px);opacity:.7;filter:hue-rotate(-60deg)} 98%{transform:translate(-2px,2px);opacity:.7} }
- 
-  .hero-sub { font-size: clamp(.9rem,1.5vw,1.05rem); color: var(--muted); margin-top: 1.5rem; max-width: 540px; line-height: 1.8; animation: fadeSlideUp .7s .2s ease both; }
-  .typewriter { color: var(--accent); border-right: 2px solid var(--accent); animation: cursorBlink .7s step-end infinite; }
-  @keyframes cursorBlink { 0%,100%{border-color:var(--accent)} 50%{border-color:transparent} }
- 
-  .hero-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 2rem; animation: fadeSlideUp .7s .3s ease both; }
-  .tag { background: var(--surface2); border: 1px solid var(--border); padding: 5px 14px; border-radius: 4px; font-size: .7rem; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; transition: border-color .2s, color .2s, transform .2s; }
-  .tag:hover { border-color: rgba(0,229,255,.3); color: var(--accent); transform: translateY(-2px); }
-  .hero-cta { margin-top: 3rem; display: flex; gap: 1rem; animation: fadeSlideUp .7s .4s ease both; }
- 
-  .scroll-indicator { position: absolute; bottom: 2.5rem; left: 8vw; display: flex; align-items: center; gap: 12px; font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); animation: fadeSlideUp 1s .8s ease both; }
-  .scroll-line { width: 40px; height: 1px; background: var(--muted); position: relative; overflow: hidden; }
-  .scroll-line::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: var(--accent); animation: scrollLine 2s ease-in-out infinite; }
-  @keyframes scrollLine { 0%{left:-100%} 100%{left:100%} }
-  @keyframes fadeSlideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:none} }
- 
-  /* MARQUEE */
-  .marquee-wrap { position: relative; z-index: 1; overflow: hidden; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1rem 0; background: var(--surface); }
-  .marquee-track { display: flex; gap: 3rem; width: max-content; animation: marquee 20s linear infinite; }
-  .marquee-item { display: flex; align-items: center; gap: 1rem; font-family: 'Syne', sans-serif; font-size: .75rem; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
-  .marquee-item em { color: var(--accent); font-style: normal; font-size: 1rem; }
-  @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
- 
-  /* STATS */
-  .stats-bar { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 1px; background: var(--border); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .stat { background: var(--bg); padding: 2.5rem 3rem; display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; transition: background .3s; }
-  .stat:hover { background: var(--surface); }
-  .stat::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: var(--accent); transition: width .4s; }
-  .stat:hover::after { width: 100%; }
-  .stat-num { font-family: 'Syne', sans-serif; font-size: 2.4rem; font-weight: 800; color: var(--accent); letter-spacing: -.02em; line-height: 1; }
-  .stat-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; }
- 
-  /* SECTION */
-  section { position: relative; z-index: 1; padding: 6rem 8vw; }
-  .section-label { display: flex; align-items: center; gap: 12px; font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
-  .section-label::before { content: ''; width: 32px; height: 1px; background: var(--accent); }
-  .section-title { font-family: 'Syne', sans-serif; font-size: clamp(2rem,4vw,3.2rem); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 1rem; }
-  .section-desc { color: var(--muted); font-size: .9rem; line-height: 1.8; max-width: 500px; margin-bottom: 3rem; }
- 
-  /* SERVICES */
-  .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .service-card { background: var(--surface); padding: 2.5rem; display: flex; flex-direction: column; gap: 1rem; transition: background .3s; position: relative; overflow: hidden; }
-  .service-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent-card, var(--accent)), transparent); transform: scaleX(0); transition: transform .4s; }
-  .service-card::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at var(--mx,50%) var(--my,50%), rgba(0,229,255,.05) 0%, transparent 60%); opacity: 0; transition: opacity .3s; pointer-events: none; }
-  .service-card:hover::before { transform: scaleX(1); }
-  .service-card:hover::after { opacity: 1; }
-  .service-card:hover { background: var(--surface2); }
-  .service-icon { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; background: var(--icon-bg, rgba(0,229,255,.1)); border: 1px solid var(--icon-border, rgba(0,229,255,.2)); transition: transform .3s, box-shadow .3s; }
-  .service-card:hover .service-icon { transform: scale(1.1) rotate(-5deg); box-shadow: 0 4px 20px var(--icon-bg); }
-  .service-name { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; }
-  .service-desc { font-size: .8rem; color: var(--muted); line-height: 1.7; flex: 1; }
-  .service-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .stag { font-size: .62rem; padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border); color: var(--muted); transition: border-color .2s, color .2s; }
-  .service-card:hover .stag { border-color: rgba(0,229,255,.2); color: var(--text); }
- 
-  /* PACKAGES */
-  .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.5rem; }
-  .package-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 2.5rem; display: flex; flex-direction: column; gap: 1.5rem; position: relative; transition: box-shadow .3s, border-color .3s; overflow: hidden; transform-style: preserve-3d; will-change: transform; }
-  .package-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at top, rgba(0,229,255,.04), transparent 60%); opacity: 0; transition: opacity .4s; }
-  .package-card:hover::before { opacity: 1; }
-  .package-card:hover { box-shadow: 0 20px 60px rgba(0,0,0,.4), 0 0 40px rgba(0,229,255,.08); }
-  .package-card.featured { border-color: var(--accent); background: linear-gradient(135deg, rgba(0,229,255,.06), var(--surface)); }
-  .package-card.featured::before { background: radial-gradient(ellipse at top, rgba(0,229,255,.1), transparent 60%); opacity: 1; }
-  .featured-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #060810; font-family: 'Syne', sans-serif; font-weight: 700; font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; padding: 4px 16px; border-radius: 100px; white-space: nowrap; animation: badgePop .5s .3s cubic-bezier(.34,1.56,.64,1) both; }
-  @keyframes badgePop { from{transform:translateX(-50%) scale(0)} to{transform:translateX(-50%) scale(1)} }
-  .pkg-tier { font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; color: var(--accent); }
-  .pkg-name { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; }
-  .pkg-price { font-family: 'Syne', sans-serif; font-size: 2.8rem; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
-  .pkg-price span { font-size: 1rem; color: var(--muted); font-weight: 400; }
-  .pkg-desc { font-size: .8rem; color: var(--muted); line-height: 1.7; border-top: 1px solid var(--border); padding-top: 1.5rem; }
-  .pkg-features { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-  .pkg-features li { display: flex; align-items: flex-start; gap: 10px; font-size: .8rem; color: var(--muted); line-height: 1.5; opacity: 0; transform: translateX(-10px); transition: opacity .4s, transform .4s, color .2s; }
-  .pkg-features li.shown { opacity: 1; transform: none; }
-  .pkg-features li::before { content: '→'; color: var(--accent); flex-shrink: 0; margin-top: 1px; }
-  .package-card:hover .pkg-features li { color: var(--text); }
-  .pkg-btn { display: block; text-align: center; text-decoration: none; padding: 12px; border-radius: 4px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; margin-top: auto; border: 1px solid var(--border); color: var(--text); transition: border-color .3s, color .3s; position: relative; overflow: hidden; }
-  .pkg-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: var(--accent); transition: left .3s; z-index: -1; }
-  .pkg-btn:hover { border-color: var(--accent); color: #060810; }
-  .pkg-btn:hover::before { left: 0; }
-  .package-card.featured .pkg-btn { background: var(--accent); border-color: var(--accent); color: #060810; }
- 
-  /* PROCESS */
-  .process-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .process-step { background: var(--surface); display: grid; grid-template-columns: 80px 1fr; gap: 2rem; align-items: start; padding: 2rem 2.5rem; transition: background .3s; position: relative; overflow: hidden; }
-  .process-step::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, rgba(0,229,255,.04), transparent); transition: width .4s; }
-  .process-step:hover { background: var(--surface2); }
-  .process-step:hover::after { width: 100%; }
-  .step-num { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; color: rgba(0,229,255,.12); line-height: 1; letter-spacing: -.04em; transition: color .3s; }
-  .process-step:hover .step-num { color: rgba(0,229,255,.3); }
-  .step-content h3 { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
-  .step-content p { font-size: .8rem; color: var(--muted); line-height: 1.7; }
- 
-  /* TECH */
-  .tech-grid { display: flex; flex-wrap: wrap; gap: 10px; }
-  .tech-pill { background: var(--surface2); border: 1px solid var(--border); padding: 8px 18px; border-radius: 100px; font-size: .75rem; display: flex; align-items: center; gap: 8px; transition: border-color .2s, color .2s, transform .2s, box-shadow .2s; cursor: default; }
-  .tech-pill:hover { border-color: rgba(0,229,255,.4); color: var(--accent); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,229,255,.1); }
-  .tech-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .5; transition: opacity .2s, box-shadow .2s; }
-  .tech-pill:hover .tech-dot { opacity: 1; box-shadow: 0 0 6px var(--accent); }
- 
-  /* CTA */
-  .cta-section { position: relative; z-index: 1; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 6rem 8vw; display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center; overflow: hidden; }
-  .cta-section::before { content: ''; position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(0,229,255,.07) 0%, transparent 70%); top: 50%; left: -100px; transform: translateY(-50%); animation: ctaOrb 5s ease-in-out infinite; pointer-events: none; }
-  @keyframes ctaOrb { 0%,100%{transform:translateY(-50%) scale(1)} 50%{transform:translateY(-50%) scale(1.1)} }
-  .cta-section h2 { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem,3.5vw,3rem); font-weight: 800; line-height: 1.1; position: relative; }
-  .cta-section h2 span { color: var(--accent); }
-  .cta-sub { color: var(--muted); font-size: .85rem; margin-top: .8rem; line-height: 1.7; }
- 
-  footer { position: relative; z-index: 1; padding: 2rem 8vw; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); font-size: .72rem; color: var(--muted); }
-  footer a { color: var(--accent); text-decoration: none; }
-  .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 0 8vw; position: relative; z-index: 1; }
- 
-  @media (max-width: 768px) {
-    .nav-links { display: none; }
-    .cta-section { grid-template-columns: 1fr; }
-    .hero, section { padding: 7rem 6vw 4rem; }
-    #cursor, #cursor-ring { display: none; }
-    body { cursor: auto; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeyad Maeen | Full-Stack Developer & Digital Craftsman</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        },
+                        accent: {
+                            purple: '#a855f7',
+                            cyan: '#06b6d4',
+                            rose: '#f43f5e',
+                        },
+                        dark: {
+                            bg: '#0a0a0f',
+                            card: '#13131f',
+                            border: '#1f1f2e',
+                        }
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 15s ease infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0f;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-card {
+            background: rgba(19, 19, 31, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(168, 85, 247, 0.2);
+        }
+        
+        .pricing-card {
+            transition: all 0.3s ease;
+        }
+        
+        .pricing-card:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        
+        .pricing-card.featured {
+            border: 2px solid #a855f7;
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+        }
+        
+        .cursor-glow {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%);
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s;
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: linear-gradient(90deg, #a855f7, #06b6d4);
+            transition: width 0.3s;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .skill-tag {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .skill-tag:hover {
+            background: rgba(168, 85, 247, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .testimonial-card {
+            background: linear-gradient(135deg, rgba(19,19,31,0.9) 0%, rgba(31,31,46,0.9) 100%);
+        }
+        
+        .stat-number {
+            background: linear-gradient(135deg, #fff 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(168, 85, 247, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(168, 85, 247, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .project-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px) scale(1.02);
+        }
+
+        .project-card:hover .project-overlay {
+            opacity: 1;
+        }
+
+        .project-overlay {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+    </style>
 </head>
-<body>
- 
-<div id="cursor"></div>
-<div id="cursor-ring"></div>
-<canvas id="particle-canvas"></canvas>
- 
-<nav id="nav">
-  <div class="nav-logo">ZM<span>.</span></div>
-  <ul class="nav-links">
-    <li><a href="#services">Services</a></li>
-    <li><a href="#packages">Packages</a></li>
-    <li><a href="#process">Process</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
-  <a href="mailto:zeyadmaeen1@gmail.com" class="btn-primary" style="padding:10px 20px;font-size:.72rem;">Hire Me →</a>
-</nav>
- 
-<section class="hero">
-  <div class="hero-orb"></div>
-  <div class="hero-orb2"></div>
-  <div class="status-badge"><span class="status-dot"></span>Available for Projects</div>
-  <h1>Full-Stack<br>Dev & <span class="glitch-word" data-text="AI Engineer">AI Engineer</span></h1>
-  <p class="hero-sub">I'm Zeyad Maeen — software engineer, backend developer, and AI researcher with 5+ years of experience. Building <span class="typewriter" id="typewriter"></span></p>
-  <div class="hero-tags">
-    <span class="tag">Backend Dev</span><span class="tag">AI & ML</span><span class="tag">Web Apps</span><span class="tag">UI Design</span><span class="tag">Cloud (AWS)</span><span class="tag">Data Analysis</span><span class="tag">Database Mgmt</span>
-  </div>
-  <div class="hero-cta">
-    <a href="#packages" class="btn-primary">View Packages →</a>
-    <a href="https://levihackermanshort.github.io/Portfolio/" target="_blank" class="btn-ghost">Portfolio ↗</a>
-  </div>
-  <div class="scroll-indicator"><div class="scroll-line"></div>Scroll to explore</div>
-</section>
- 
-<div class="marquee-wrap">
-  <div class="marquee-track">
-    <div class="marquee-item"><em>✦</em>Backend Development</div><div class="marquee-item"><em>✦</em>AI Integration</div><div class="marquee-item"><em>✦</em>React Applications</div><div class="marquee-item"><em>✦</em>Database Architecture</div><div class="marquee-item"><em>✦</em>UI/UX Design</div><div class="marquee-item"><em>✦</em>AWS Cloud</div><div class="marquee-item"><em>✦</em>Data Analysis</div><div class="marquee-item"><em>✦</em>Node.js</div><div class="marquee-item"><em>✦</em>Python</div><div class="marquee-item"><em>✦</em>Deep Learning</div>
-    <div class="marquee-item"><em>✦</em>Backend Development</div><div class="marquee-item"><em>✦</em>AI Integration</div><div class="marquee-item"><em>✦</em>React Applications</div><div class="marquee-item"><em>✦</em>Database Architecture</div><div class="marquee-item"><em>✦</em>UI/UX Design</div><div class="marquee-item"><em>✦</em>AWS Cloud</div><div class="marquee-item"><em>✦</em>Data Analysis</div><div class="marquee-item"><em>✦</em>Node.js</div><div class="marquee-item"><em>✦</em>Python</div><div class="marquee-item"><em>✦</em>Deep Learning</div>
-  </div>
-</div>
- 
-<div class="stats-bar">
-  <div class="stat reveal"><div class="stat-num"><span class="count-up" data-target="5">0</span>+</div><div class="stat-label">Years Experience</div></div>
-  <div class="stat reveal" style="transition-delay:.1s"><div class="stat-num"><span class="count-up" data-target="10">0</span>+</div><div class="stat-label">Projects Shipped</div></div>
-  <div class="stat reveal" style="transition-delay:.2s"><div class="stat-num"><span class="count-up" data-target="4">0</span></div><div class="stat-label">Languages Spoken</div></div>
-  <div class="stat reveal" style="transition-delay:.3s"><div class="stat-num"><span class="count-up" data-target="3">0</span>+</div><div class="stat-label">Internships & Roles</div></div>
-  <div class="stat reveal" style="transition-delay:.4s"><div class="stat-num">∞</div><div class="stat-label">Revisions on Pro+</div></div>
-</div>
- 
-<section id="services">
-  <div class="section-label reveal-left">What I Do</div>
-  <h2 class="section-title reveal">Services</h2>
-  <p class="section-desc reveal">End-to-end digital services, from production-grade web apps to AI integrations, UI design, and data pipelines.</p>
-  <div class="services-grid">
-    <div class="service-card reveal" style="--accent-card:#00e5ff;--icon-bg:rgba(0,229,255,.1);--icon-border:rgba(0,229,255,.2)"><div class="service-icon">⚙️</div><div class="service-name">Backend Development</div><p class="service-desc">Robust APIs, server logic, and database architecture. Experienced with Node.js, Django, Flask, PostgreSQL, MySQL, and Firebase. Built production systems at Radical AI.</p><div class="service-tags"><span class="stag">Node.js</span><span class="stag">Django</span><span class="stag">Flask</span><span class="stag">PostgreSQL</span><span class="stag">Firebase</span></div></div>
-    <div class="service-card reveal" style="--accent-card:#7c3aed;--icon-bg:rgba(124,58,237,.1);--icon-border:rgba(124,58,237,.2);transition-delay:.05s"><div class="service-icon">🤖</div><div class="service-name">AI Integration & Research</div><p class="service-desc">Integrate LLMs, build AI-powered features, or research custom solutions. Active creator at Rosebud AI (Enigma AI) and experienced with deep learning and AI pipelines.</p><div class="service-tags"><span class="stag">LLMs</span><span class="stag">Deep Learning</span><span class="stag">Python</span><span class="stag">Research</span></div></div>
-    <div class="service-card reveal" style="--accent-card:#f59e0b;--icon-bg:rgba(245,158,11,.1);--icon-border:rgba(245,158,11,.2);transition-delay:.1s"><div class="service-icon">🌐</div><div class="service-name">Full-Stack Web Apps</div><p class="service-desc">From landing pages to complete React applications. Frontend built with React.js, backends powered by Node.js or Django, deployed to cloud infrastructure.</p><div class="service-tags"><span class="stag">React.js</span><span class="stag">HTML/CSS</span><span class="stag">JavaScript</span><span class="stag">Firebase</span></div></div>
-    <div class="service-card reveal" style="--accent-card:#10b981;--icon-bg:rgba(16,185,129,.1);--icon-border:rgba(16,185,129,.2);transition-delay:.15s"><div class="service-icon">🗄️</div><div class="service-name">Database Design & Optimization</div><p class="service-desc">Schema design, query optimization, and database management. Trained in Oracle Java JDBC and TOAD. Proven record improving query efficiency by 15%+ through targeted optimization.</p><div class="service-tags"><span class="stag">MySQL</span><span class="stag">PostgreSQL</span><span class="stag">Oracle</span><span class="stag">TOAD</span></div></div>
-    <div class="service-card reveal" style="--accent-card:#e879f9;--icon-bg:rgba(232,121,249,.1);--icon-border:rgba(232,121,249,.2);transition-delay:.2s"><div class="service-icon">🎨</div><div class="service-name">UI/UX Design</div><p class="service-desc">User-centered design using Google UX Design methodologies. Certified UI Design Specialist from University of Minnesota. Clean interfaces backed by real design principles.</p><div class="service-tags"><span class="stag">Figma</span><span class="stag">UX Research</span><span class="stag">Prototyping</span><span class="stag">Design Systems</span></div></div>
-    <div class="service-card reveal" style="--accent-card:#f97316;--icon-bg:rgba(249,115,22,.1);--icon-border:rgba(249,115,22,.2);transition-delay:.25s"><div class="service-icon">☁️</div><div class="service-name">Cloud & Data Analysis</div><p class="service-desc">AWS cloud computing, data pipelines, and analytical reporting. Training in AWS Cloud (Manara) and Data Analysis (Alx Ventures). Perfect for data-driven product decisions.</p><div class="service-tags"><span class="stag">AWS</span><span class="stag">Data Analysis</span><span class="stag">Cloud Infra</span><span class="stag">Python</span></div></div>
-  </div>
-</section>
- 
-<div class="divider"></div>
- 
-<section id="packages">
-  <div class="section-label reveal-left">Pricing</div>
-  <h2 class="section-title reveal">Packages</h2>
-  <p class="section-desc reveal">Transparent, flat-rate packages. Need something custom? Let's talk.</p>
-  <div class="packages-grid">
-    <div class="package-card reveal">
-      <div><div class="pkg-tier">Starter</div><div class="pkg-name">Launch</div></div>
-      <div class="pkg-price">$299<span> /project</span></div>
-      <p class="pkg-desc">Perfect for individuals and small businesses who need a clean, professional online presence built fast.</p>
-      <ul class="pkg-features"><li>Single-page website or landing page</li><li>Responsive HTML/CSS/JS or React</li><li>Contact form with email integration</li><li>Basic SEO setup</li><li>2 revision rounds</li><li>5-day delivery</li><li>Firebase or static hosting setup</li></ul>
-      <a href="mailto:zeyadmaeen1@gmail.com?subject=Launch Package" class="pkg-btn">Get Started →</a>
+<body class="antialiased">
+    <div class="noise"></div>
+    <div class="cursor-glow hidden md:block" id="cursorGlow"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 top-0 transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">Z</span>
+                    </div>
+                    <span class="font-display font-bold text-2xl tracking-tight">Zeyad Maeen</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#services" class="nav-link text-gray-300 hover:text-white transition-colors">Services</a>
+                    <a href="#portfolio" class="nav-link text-gray-300 hover:text-white transition-colors">Portfolio</a>
+                    <a href="#pricing" class="nav-link text-gray-300 hover:text-white transition-colors">Pricing</a>
+                    <a href="#testimonials" class="nav-link text-gray-300 hover:text-white transition-colors">Testimonials</a>
+                    <a href="#contact" class="btn-primary px-6 py-3 rounded-full text-white font-medium">Start Project</a>
+                </div>
+                
+                <button class="md:hidden text-white" id="mobileMenuBtn">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="hidden md:hidden glass-card border-t border-gray-800" id="mobileMenu">
+            <div class="px-4 pt-2 pb-6 space-y-2">
+                <a href="#services" class="block px-3 py-2 text-gray-300 hover:text-white">Services</a>
+                <a href="#portfolio" class="block px-3 py-2 text-gray-300 hover:text-white">Portfolio</a>
+                <a href="#pricing" class="block px-3 py-2 text-gray-300 hover:text-white">Pricing</a>
+                <a href="#contact" class="block px-3 py-2 text-purple-400 font-medium">Start Project</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden grid-bg">
+        <div class="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-transparent"></div>
+        
+        <!-- Animated Background Elements -->
+        <div class="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse-slow" style="animation-delay: 2s;"></div>
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <a href="https://github.com/Levihackermanshort" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card mb-8 animate-float cursor-pointer hover:border-purple-500/50 transition-colors">
+                <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                <span class="text-sm text-gray-300">41 Public Repositories</span>
+                <i data-lucide="external-link" class="w-3 h-3 text-gray-500"></i>
+            </a>
+            
+            <h1 class="font-display text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+                Building <span class="gradient-text">Digital</span><br>
+                Experiences That <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">Scale</span>
+            </h1>
+            
+            <p class="max-w-2xl mx-auto text-xl text-gray-400 mb-10 leading-relaxed">
+                Full-stack developer specializing in React, Node.js, game development, and cloud architecture. 
+                I transform complex problems into elegant, high-performance applications.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+                <a href="#pricing" class="btn-primary px-8 py-4 rounded-full text-white font-semibold text-lg flex items-center gap-2 group">
+                    View Packages
+                    <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                </a>
+                <a href="https://github.com/Levihackermanshort" target="_blank" class="px-8 py-4 rounded-full border border-gray-600 text-white font-semibold text-lg hover:border-purple-500 hover:bg-purple-500/10 transition-all flex items-center gap-2">
+                    <i data-lucide="github" class="w-5 h-5"></i>
+                    View GitHub
+                </a>
+            </div>
+            
+            <!-- Tech Stack -->
+            <div class="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
+                <span class="skill-tag px-4 py-2 rounded-full text-sm text-purple-300">React & Next.js</span>
+                <span class="skill-tag px-4 py-2 rounded-full text-sm text-purple-300">Node.js & Express</span>
+                <span class="skill-tag px-4 py-2 rounded-full text-sm text-purple-300">JavaScript & C++</span>
+                <span class="skill-tag px-4 py-2 rounded-full text-sm text-purple-300">Game Development</span>
+                <span class="skill-tag px-4 py-2 rounded-full text-sm text-purple-300">CSS Animation</span>
+                <span class="skill-tag px-4 py-2 rounded-full text-sm text-purple-300">CLI Applications</span>
+            </div>
+        </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i data-lucide="chevron-down" class="w-6 h-6 text-gray-500"></i>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-20 border-y border-gray-800 bg-dark-card/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div class="stat-item">
+                    <div class="stat-number text-4xl md:text-5xl font-bold font-display mb-2" data-target="41">0</div>
+                    <div class="text-gray-400">GitHub Repos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number text-4xl md:text-5xl font-bold font-display mb-2" data-target="15">0</div>
+                    <div class="text-gray-400">Projects Delivered</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number text-4xl md:text-5xl font-bold font-display mb-2" data-target="5">0</div>
+                    <div class="text-gray-400">Years Coding</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number text-4xl md:text-5xl font-bold font-display mb-2" data-target="100">0</div>
+                    <div class="text-gray-400">% Commitment</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-32 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <h2 class="font-display text-4xl md:text-5xl font-bold mb-4">Services That Drive <span class="gradient-text">Results</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">End-to-end development solutions tailored to your business needs</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Service 1 -->
+                <div class="service-card glass-card p-8 rounded-2xl relative overflow-hidden group cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 bg-purple-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i data-lucide="smartphone" class="w-7 h-7 text-purple-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 font-display">Web Development</h3>
+                        <p class="text-gray-400 mb-6">Modern, responsive websites using React, Next.js, and cutting-edge CSS animations.</p>
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> React & Next.js</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> CSS Animations</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Responsive Design</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="service-card glass-card p-8 rounded-2xl relative overflow-hidden group cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-cyan-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 bg-cyan-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i data-lucide="gamepad-2" class="w-7 h-7 text-cyan-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 font-display">Game Development</h3>
+                        <p class="text-gray-400 mb-6">Browser-based games and interactive experiences using JavaScript and C++.</p>
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> JavaScript Games</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> C++ CLI Games</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Interactive UI</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="service-card glass-card p-8 rounded-2xl relative overflow-hidden group cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-rose-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 bg-rose-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i data-lucide="terminal" class="w-7 h-7 text-rose-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 font-display">CLI Applications</h3>
+                        <p class="text-gray-400 mb-6">Powerful command-line tools and utilities built with C++ and Node.js.</p>
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> C++ Performance</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Node.js Scripts</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Automation Tools</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 4 -->
+                <div class="service-card glass-card p-8 rounded-2xl relative overflow-hidden group cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-amber-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 bg-amber-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i data-lucide="palette" class="w-7 h-7 text-amber-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 font-display">UI/UX Design</h3>
+                        <p class="text-gray-400 mb-6">Stunning interfaces with advanced CSS animations and modern design principles.</p>
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> CSS Animations</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Tailwind CSS</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Interactive Prototypes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 5 -->
+                <div class="service-card glass-card p-8 rounded-2xl relative overflow-hidden group cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i data-lucide="code-2" class="w-7 h-7 text-emerald-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 font-display">Frontend Development</h3>
+                        <p class="text-gray-400 mb-6">Pixel-perfect implementation of designs with clean, maintainable code.</p>
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> HTML5 & CSS3</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> JavaScript ES6+</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> React Components</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Service 6 -->
+                <div class="service-card glass-card p-8 rounded-2xl relative overflow-hidden group cursor-pointer">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 bg-blue-500/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <i data-lucide="zap" class="w-7 h-7 text-blue-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 font-display">Performance Optimization</h3>
+                        <p class="text-gray-400 mb-6">Speed up existing applications and improve user experience metrics.</p>
+                        <ul class="space-y-2 text-sm text-gray-500">
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Load Time Optimization</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Code Refactoring</li>
+                            <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Best Practices</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="py-32 bg-dark-card/30 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-16">
+                <div>
+                    <h2 class="font-display text-4xl md:text-5xl font-bold mb-4">Featured <span class="gradient-text">Projects</span></h2>
+                    <p class="text-gray-400 max-w-xl">Selected works from my GitHub showcasing technical skills and creativity</p>
+                </div>
+                <a href="https://github.com/Levihackermanshort" target="_blank" class="mt-6 md:mt-0 flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors">
+                    <i data-lucide="github" class="w-5 h-5"></i>
+                    View All 41 Repositories
+                </a>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Project 1: CSS Card Animation -->
+                <a href="https://github.com/Levihackermanshort/CSS-Card-Animation" target="_blank" class="project-card group relative overflow-hidden rounded-2xl cursor-pointer block">
+                    <div class="aspect-[4/3] bg-gradient-to-br from-purple-900 via-pink-900 to-orange-900 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+')] opacity-30"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i data-lucide="layers" class="w-20 h-20 text-white/20 group-hover:scale-110 transition-transform duration-500"></i>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <span class="px-3 py-1 bg-purple-500/30 backdrop-blur rounded-full text-xs text-purple-200 border border-purple-500/30">CSS</span>
+                        </div>
+                    </div>
+                    <div class="project-overlay absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+                            CSS Card Animation
+                            <i data-lucide="external-link" class="w-4 h-4 opacity-50"></i>
+                        </h3>
+                        <p class="text-gray-400 text-sm mb-4">Advanced CSS animations and hover effects for interactive card components.</p>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">CSS3</span>
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">Animations</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Project 2: Car Race Game -->
+                <a href="https://github.com/Levihackermanshort/Car-Race-Game" target="_blank" class="project-card group relative overflow-hidden rounded-2xl cursor-pointer block">
+                    <div class="aspect-[4/3] bg-gradient-to-br from-red-900 via-orange-900 to-yellow-900 relative overflow-hidden">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i data-lucide="car" class="w-20 h-20 text-white/20 group-hover:scale-110 transition-transform duration-500"></i>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <span class="px-3 py-1 bg-orange-500/30 backdrop-blur rounded-full text-xs text-orange-200 border border-orange-500/30">JavaScript</span>
+                        </div>
+                    </div>
+                    <div class="project-overlay absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+                            Car Race Game
+                            <i data-lucide="external-link" class="w-4 h-4 opacity-50"></i>
+                        </h3>
+                        <p class="text-gray-400 text-sm mb-4">Browser-based racing game with JavaScript physics and collision detection.</p>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">JavaScript</span>
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">Canvas API</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Project 3: Portfolio -->
+                <a href="https://github.com/Levihackermanshort/Zeyad_Portfolio" target="_blank" class="project-card group relative overflow-hidden rounded-2xl cursor-pointer block">
+                    <div class="aspect-[4/3] bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 relative overflow-hidden">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i data-lucide="user" class="w-20 h-20 text-white/20 group-hover:scale-110 transition-transform duration-500"></i>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <span class="px-3 py-1 bg-blue-500/30 backdrop-blur rounded-full text-xs text-blue-200 border border-blue-500/30">Portfolio</span>
+                        </div>
+                    </div>
+                    <div class="project-overlay absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+                            Zeyad Portfolio
+                            <i data-lucide="external-link" class="w-4 h-4 opacity-50"></i>
+                        </h3>
+                        <p class="text-gray-400 text-sm mb-4">Personal portfolio website showcasing projects and skills with modern CSS.</p>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">HTML/CSS</span>
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">Responsive</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Project 4: CLI DnD Game -->
+                <a href="https://github.com/Levihackermanshort/CLIDnD-game" target="_blank" class="project-card group relative overflow-hidden rounded-2xl cursor-pointer block">
+                    <div class="aspect-[4/3] bg-gradient-to-br from-green-900 via-teal-900 to-cyan-900 relative overflow-hidden">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i data-lucide="sword" class="w-20 h-20 text-white/20 group-hover:scale-110 transition-transform duration-500"></i>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <span class="px-3 py-1 bg-green-500/30 backdrop-blur rounded-full text-xs text-green-200 border border-green-500/30">C++</span>
+                        </div>
+                    </div>
+                    <div class="project-overlay absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+                            CLI D&D Game
+                            <i data-lucide="external-link" class="w-4 h-4 opacity-50"></i>
+                        </h3>
+                        <p class="text-gray-400 text-sm mb-4">Text-based Dungeons & Dragons game with C++ demonstrating OOP principles.</p>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">C++</span>
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">OOP</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Project 5: Additional Car Game -->
+                <a href="https://github.com/Levihackermanshort/Car-game" target="_blank" class="project-card group relative overflow-hidden rounded-2xl cursor-pointer block">
+                    <div class="aspect-[4/3] bg-gradient-to-br from-yellow-900 via-red-900 to-pink-900 relative overflow-hidden">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <i data-lucide="gauge" class="w-20 h-20 text-white/20 group-hover:scale-110 transition-transform duration-500"></i>
+                        </div>
+                        <div class="absolute top-4 right-4">
+                            <span class="px-3 py-1 bg-yellow-500/30 backdrop-blur rounded-full text-xs text-yellow-200 border border-yellow-500/30">Game</span>
+                        </div>
+                    </div>
+                    <div class="project-overlay absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold mb-2 flex items-center gap-2">
+                            Car Game
+                            <i data-lucide="external-link" class="w-4 h-4 opacity-50"></i>
+                        </h3>
+                        <p class="text-gray-400 text-sm mb-4">Another iteration of racing game with improved mechanics and UI.</p>
+                        <div class="flex gap-2">
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">JavaScript</span>
+                            <span class="px-3 py-1 bg-white/10 rounded-full text-xs">Game Dev</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Project 6: More Projects Teaser -->
+                <a href="https://github.com/Levihackermanshort?tab=repositories" target="_blank" class="project-card group relative overflow-hidden rounded-2xl cursor-pointer block border-2 border-dashed border-gray-700 hover:border-purple-500/50 transition-colors">
+                    <div class="aspect-[4/3] bg-dark-card relative overflow-hidden flex items-center justify-center">
+                        <div class="text-center">
+                            <i data-lucide="more-horizontal" class="w-16 h-16 text-gray-600 group-hover:text-purple-400 transition-colors mb-4"></i>
+                            <p class="text-gray-500 group-hover:text-gray-300 transition-colors">View 35+ More Projects</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-32 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-purple-900/10 via-transparent to-transparent"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-20">
+                <h2 class="font-display text-4xl md:text-5xl font-bold mb-4">Investment <span class="gradient-text">Plans</span></h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">Transparent pricing for every stage of your business. Secure payment via Stripe.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Starter -->
+                <div class="pricing-card glass-card rounded-2xl p-8 relative">
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-300 mb-2">Starter</h3>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-4xl font-bold font-display">$500</span>
+                            <span class="text-gray-500">/project</span>
+                        </div>
+                        <p class="text-gray-400 text-sm mt-2">Perfect for landing pages and simple animations</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-0.5"></i>
+                            <span class="text-gray-300">Single page website</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-0.5"></i>
+                            <span class="text-gray-300">CSS animations</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-0.5"></i>
+                            <span class="text-gray-300">Mobile responsive</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-0.5"></i>
+                            <span class="text-gray-300">1 week delivery</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-green-400 mt-0.5"></i>
+                            <span class="text-gray-300">2 revisions</span>
+                        </li>
+                    </ul>
+                    
+                    <button onclick="selectPlan('starter')" class="w-full py-3 rounded-full border border-gray-600 text-white font-medium hover:border-purple-500 hover:bg-purple-500/10 transition-all">
+                        Get Started
+                    </button>
+                </div>
+
+                <!-- Professional (Featured) -->
+                <div class="pricing-card featured glass-card rounded-2xl p-8 relative transform md:-translate-y-4">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                        <span class="bg-gradient-to-r from-purple-500 to-cyan-500 text-white px-4 py-1 rounded-full text-sm font-medium">Most Popular</span>
+                    </div>
+                    
+                    <div class="mb-8 mt-4">
+                        <h3 class="text-xl font-semibold text-gray-300 mb-2">Professional</h3>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-4xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">$2,000</span>
+                            <span class="text-gray-500">/project</span>
+                        </div>
+                        <p class="text-gray-400 text-sm mt-2">Full-featured web application or game</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-purple-400 mt-0.5"></i>
+                            <span class="text-gray-300">Multi-page website or game</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-purple-400 mt-0.5"></i>
+                            <span class="text-gray-300">JavaScript interactivity</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-purple-400 mt-0.5"></i>
+                            <span class="text-gray-300">Advanced animations</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-purple-400 mt-0.5"></i>
+                            <span class="text-gray-300">Contact form integration</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-purple-400 mt-0.5"></i>
+                            <span class="text-gray-300">2-3 weeks delivery</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-purple-400 mt-0.5"></i>
+                            <span class="text-gray-300">5 revisions</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-purple-400 mt-0.5"></i>
+                            <span class="text-gray-300">30 days support</span>
+                        </li>
+                    </ul>
+                    
+                    <button onclick="selectPlan('professional')" class="w-full py-3 rounded-full btn-primary text-white font-medium hover:shadow-lg hover:shadow-purple-500/25 transition-all">
+                        Start Project
+                    </button>
+                </div>
+
+                <!-- Enterprise -->
+                <div class="pricing-card glass-card rounded-2xl p-8 relative">
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-gray-300 mb-2">Enterprise</h3>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-4xl font-bold font-display">Custom</span>
+                        </div>
+                        <p class="text-gray-400 text-sm mt-2">Complex systems & ongoing development</p>
+                    </div>
+                    
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-cyan-400 mt-0.5"></i>
+                            <span class="text-gray-300">Full-stack application</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-cyan-400 mt-0.5"></i>
+                            <span class="text-gray-300">Database integration</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-cyan-400 mt-0.5"></i>
+                            <span class="text-gray-300">User authentication</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-cyan-400 mt-0.5"></i>
+                            <span class="text-gray-300">API development</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-cyan-400 mt-0.5"></i>
+                            <span class="text-gray-300">Priority support</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i data-lucide="check" class="w-5 h-5 text-cyan-400 mt-0.5"></i>
+                            <span class="text-gray-300">Unlimited revisions</span>
+                        </li>
+                    </ul>
+                    
+                    <button onclick="selectPlan('enterprise')" class="w-full py-3 rounded-full border border-cyan-500/50 text-cyan-400 font-medium hover:bg-cyan-500/10 transition-all">
+                        Contact Me
+                    </button>
+                </div>
+            </div>
+
+            <!-- Payment Info -->
+            <div class="mt-12 text-center">
+                <div class="inline-flex items-center gap-4 glass-card px-6 py-3 rounded-full">
+                    <i data-lucide="credit-card" class="w-5 h-5 text-purple-400"></i>
+                    <span class="text-gray-300 text-sm">Secure payments powered by</span>
+                    <span class="font-bold text-white">Stripe</span>
+                    <span class="text-gray-500 text-xs">(Bank transfer available for Enterprise)</span>
+                </div>
+            </div>
+
+            <!-- Trust Badges -->
+            <div class="mt-8 flex flex-wrap justify-center gap-8 items-center opacity-50">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    <span class="text-sm">Secure Payment</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    <span class="text-sm">Satisfaction Guarantee</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                    <span class="text-sm">NDA Available</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="py-32 bg-dark-card/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="font-display text-4xl md:text-5xl font-bold text-center mb-16">What People <span class="gradient-text">Say</span></h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="testimonial-card p-8 rounded-2xl border border-gray-800">
+                    <div class="flex gap-1 mb-4">
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                    </div>
+                    <p class="text-gray-300 mb-6">"Zeyad delivered an incredible interactive website for my business. The CSS animations he created made our product stand out. Highly recommend his work!"</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center font-bold">AK</div>
+                        <div>
+                            <div class="font-semibold">Ahmed Khan</div>
+                            <div class="text-sm text-gray-500">Startup Founder</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card p-8 rounded-2xl border border-gray-800">
+                    <div class="flex gap-1 mb-4">
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                    </div>
+                    <p class="text-gray-300 mb-6">"The car racing game Zeyad built for my arcade website exceeded expectations. Smooth gameplay, great graphics, and delivered on time. True professional."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center font-bold">MR</div>
+                        <div>
+                            <div class="font-semibold">Mohammed Rahman</div>
+                            <div class="text-sm text-gray-500">Game Studio Owner</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card p-8 rounded-2xl border border-gray-800">
+                    <div class="flex gap-1 mb-4">
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                        <i data-lucide="star" class="w-5 h-5 text-yellow-400 fill-yellow-400"></i>
+                    </div>
+                    <p class="text-gray-300 mb-6">"Zeyad's CLI tool automated our data processing workflow perfectly. His C++ skills are impressive and the code was well-documented. Will hire again."</p>
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center font-bold">SJ</div>
+                        <div>
+                            <div class="font-semibold">Sarah Johnson</div>
+                            <div class="text-sm text-gray-500">Tech Lead</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <p class="text-gray-500 text-sm mb-4">Have we worked together? I'd love your testimonial!</p>
+                <a href="https://www.linkedin.com/in/zezomaeen" target="_blank" class="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors">
+                    <i data-lucide="linkedin" class="w-5 h-5"></i>
+                    Connect on LinkedIn
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="py-32 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <h2 class="font-display text-4xl md:text-5xl font-bold mb-4">How We <span class="gradient-text">Work</span></h2>
+                <p class="text-gray-400">A proven process that ensures success</p>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="relative">
+                    <div class="w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-6">
+                        <span class="text-2xl font-bold text-purple-400">01</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Discovery</h3>
+                    <p class="text-gray-400 text-sm">We discuss your requirements, goals, and vision for the project.</p>
+                    <div class="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-purple-500/50 to-transparent"></div>
+                </div>
+
+                <div class="relative">
+                    <div class="w-16 h-16 rounded-2xl bg-cyan-500/20 flex items-center justify-center mb-6">
+                        <span class="text-2xl font-bold text-cyan-400">02</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Proposal</h3>
+                    <p class="text-gray-400 text-sm">I send a detailed proposal with timeline, cost, and deliverables.</p>
+                    <div class="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-cyan-500/50 to-transparent"></div>
+                </div>
+
+                <div class="relative">
+                    <div class="w-16 h-16 rounded-2xl bg-rose-500/20 flex items-center justify-center mb-6">
+                        <span class="text-2xl font-bold text-rose-400">03</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Development</h3>
+                    <p class="text-gray-400 text-sm">Regular updates as I build your project with weekly check-ins.</p>
+                    <div class="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-rose-500/50 to-transparent"></div>
+                </div>
+
+                <div class="relative">
+                    <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center mb-6">
+                        <span class="text-2xl font-bold text-emerald-400">04</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Delivery</h3>
+                    <p class="text-gray-400 text-sm">Final review, deployment, and handover with documentation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="contact" class="py-32 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-purple-900/20 to-cyan-900/20"></div>
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden">
+            <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/30 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-cyan-500/30 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <h2 class="font-display text-4xl md:text-6xl font-bold mb-6">Ready to Build Something <span class="gradient-text">Amazing?</span></h2>
+            <p class="text-xl text-gray-400 mb-10">Let's discuss your project and turn your vision into reality.</p>
+            
+            <form id="contactForm" class="max-w-xl mx-auto space-y-4 text-left">
+                <div class="grid md:grid-cols-2 gap-4">
+                    <input type="text" placeholder="Your Name" required class="w-full px-6 py-4 rounded-xl bg-dark-card border border-gray-700 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors">
+                    <input type="email" placeholder="Your Email" required class="w-full px-6 py-4 rounded-xl bg-dark-card border border-gray-700 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors">
+                </div>
+                <select id="planSelect" class="w-full px-6 py-4 rounded-xl bg-dark-card border border-gray-700 text-white focus:border-purple-500 focus:outline-none transition-colors">
+                    <option value="">Select a package (optional)</option>
+                    <option value="starter">Starter Package ($500)</option>
+                    <option value="professional">Professional Package ($2,000)</option>
+                    <option value="enterprise">Enterprise (Custom)</option>
+                </select>
+                <input type="text" placeholder="Project Budget (optional)" class="w-full px-6 py-4 rounded-xl bg-dark-card border border-gray-700 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors">
+                <textarea placeholder="Tell me about your project..." rows="4" required class="w-full px-6 py-4 rounded-xl bg-dark-card border border-gray-700 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none transition-colors resize-none"></textarea>
+                
+                <button type="submit" class="w-full btn-primary py-4 rounded-xl text-white font-semibold text-lg flex items-center justify-center gap-2 group">
+                    Send Message
+                    <i data-lucide="send" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </form>
+
+            <div class="mt-12 flex flex-col md:flex-row justify-center items-center gap-8">
+                <a href="mailto:zeyadmaeen1@gmail.com" class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="mail" class="w-5 h-5"></i>
+                    zeyadmaeen1@gmail.com
+                </a>
+                <a href="https://www.linkedin.com/in/zezomaeen" target="_blank" class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="linkedin" class="w-5 h-5"></i>
+                    LinkedIn
+                </a>
+                <a href="https://github.com/Levihackermanshort" target="_blank" class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="github" class="w-5 h-5"></i>
+                    GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 py-12 bg-dark-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
+                        <span class="text-white font-bold">Z</span>
+                    </div>
+                    <span class="font-display font-bold text-xl">Zeyad Maeen</span>
+                </div>
+                
+                <div class="text-gray-500 text-sm">
+                    © 2026 Zeyad Maeen. All rights reserved.
+                </div>
+                
+                <div class="flex gap-6">
+                    <a href="https://github.com/Levihackermanshort" target="_blank" class="text-gray-400 hover:text-white transition-colors">
+                        <i data-lucide="github" class="w-5 h-5"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/zezomaeen" target="_blank" class="text-gray-400 hover:text-white transition-colors">
+                        <i data-lucide="linkedin" class="w-5 h-5"></i>
+                    </a>
+                    <a href="mailto:zeyadmaeen1@gmail.com" class="text-gray-400 hover:text-white transition-colors">
+                        <i data-lucide="mail" class="w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 right-8 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <div class="glass-card px-6 py-4 rounded-xl border border-purple-500/50 flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+            <span id="toastMessage" class="text-white">Message sent successfully!</span>
+        </div>
     </div>
-    <div class="package-card featured reveal" style="transition-delay:.1s">
-      <div class="featured-badge">Most Popular</div>
-      <div><div class="pkg-tier">Growth</div><div class="pkg-name">Build</div></div>
-      <div class="pkg-price">$799<span> /project</span></div>
-      <p class="pkg-desc">For startups and SMEs who need a full-featured web application with backend, database, and clean UX.</p>
-      <ul class="pkg-features"><li>Multi-page React web application</li><li>Backend API (Node.js or Django)</li><li>Database design & setup (PostgreSQL / MySQL)</li><li>User auth (login, register, roles)</li><li>Admin dashboard or CMS</li><li>4 revision rounds</li><li>Cloud deployment (Firebase / AWS)</li><li>2 weeks delivery</li><li>30-day post-launch support</li></ul>
-      <a href="mailto:zeyadmaeen1@gmail.com?subject=Build Package" class="pkg-btn">Get Started →</a>
-    </div>
-    <div class="package-card reveal" style="transition-delay:.2s">
-      <div><div class="pkg-tier">Advanced</div><div class="pkg-name">AI-Powered</div></div>
-      <div class="pkg-price">$1,499<span> /project</span></div>
-      <p class="pkg-desc">For clients who want to leverage AI — chatbots, intelligent automation, data pipelines, or LLM integrations.</p>
-      <ul class="pkg-features"><li>Everything in Build package</li><li>AI/LLM integration (OpenAI, custom models)</li><li>Data pipeline or analytics dashboard</li><li>Deep learning / recommendation system</li><li>AWS cloud architecture & deployment</li><li>Unlimited revisions</li><li>3 weeks delivery</li><li>60-day post-launch support</li><li>Technical documentation included</li></ul>
-      <a href="mailto:zeyadmaeen1@gmail.com?subject=AI-Powered Package" class="pkg-btn">Get Started →</a>
-    </div>
-    <div class="package-card reveal" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:2rem;transition-delay:.3s">
-      <div style="display:flex;flex-direction:column;gap:1rem">
-        <div class="pkg-tier">Retainer</div><div class="pkg-name">Monthly Partner</div>
-        <div class="pkg-price">$599<span> /month</span></div>
-        <p class="pkg-desc">Ongoing technical support, feature development, and consulting. Ideal for businesses needing a dedicated developer without hiring full-time. Min. 2-month commitment.</p>
-      </div>
-      <div style="display:flex;flex-direction:column;justify-content:space-between">
-        <ul class="pkg-features"><li>40 hours of development / month</li><li>Bug fixes & maintenance priority</li><li>New feature development</li><li>Weekly progress calls</li><li>Database & performance monitoring</li><li>AI/data consulting included</li><li>Rollover up to 8 unused hours</li></ul>
-        <a href="mailto:zeyadmaeen1@gmail.com?subject=Monthly Retainer" class="pkg-btn" style="margin-top:1.5rem">Start Partnership →</a>
-      </div>
-    </div>
-  </div>
-</section>
- 
-<div class="divider"></div>
- 
-<section>
-  <div class="section-label reveal-left">Tech Stack</div>
-  <h2 class="section-title reveal">Tools & Technologies</h2>
-  <p class="section-desc reveal">The full toolkit — everything I use to build reliable, scalable products.</p>
-  <div class="tech-grid reveal">
-    <span class="tech-pill"><span class="tech-dot"></span>Python</span><span class="tech-pill"><span class="tech-dot"></span>JavaScript</span><span class="tech-pill"><span class="tech-dot"></span>C / C++</span><span class="tech-pill"><span class="tech-dot"></span>Java</span><span class="tech-pill"><span class="tech-dot"></span>React.js</span><span class="tech-pill"><span class="tech-dot"></span>Node.js</span><span class="tech-pill"><span class="tech-dot"></span>Django</span><span class="tech-pill"><span class="tech-dot"></span>Flask</span><span class="tech-pill"><span class="tech-dot"></span>HTML / CSS</span><span class="tech-pill"><span class="tech-dot"></span>Firebase</span><span class="tech-pill"><span class="tech-dot"></span>PostgreSQL</span><span class="tech-pill"><span class="tech-dot"></span>MySQL</span><span class="tech-pill"><span class="tech-dot"></span>Oracle SQL</span><span class="tech-pill"><span class="tech-dot"></span>AWS Cloud</span><span class="tech-pill"><span class="tech-dot"></span>Three.js / WebGL</span><span class="tech-pill"><span class="tech-dot"></span>Git / GitHub</span><span class="tech-pill"><span class="tech-dot"></span>Figma</span><span class="tech-pill"><span class="tech-dot"></span>LLM / AI APIs</span><span class="tech-pill"><span class="tech-dot"></span>Deep Learning (GPU)</span><span class="tech-pill"><span class="tech-dot"></span>Data Analysis</span>
-  </div>
-</section>
- 
-<div class="divider"></div>
- 
-<section id="process">
-  <div class="section-label reveal-left">How It Works</div>
-  <h2 class="section-title reveal">The Process</h2>
-  <p class="section-desc reveal">Clear, professional, no surprises. Here's exactly what working with me looks like.</p>
-  <div class="process-list">
-    <div class="process-step reveal"><div class="step-num">01</div><div class="step-content"><h3>Discovery Call</h3><p>We jump on a free 30-min call to understand your goals, timeline, and technical requirements. I'll ask the right questions so we're aligned before any code is written.</p></div></div>
-    <div class="process-step reveal" style="transition-delay:.1s"><div class="step-num">02</div><div class="step-content"><h3>Proposal & Scope</h3><p>I send a clear written proposal outlining deliverables, milestones, timeline, and pricing. No scope creep — everything is defined upfront.</p></div></div>
-    <div class="process-step reveal" style="transition-delay:.15s"><div class="step-num">03</div><div class="step-content"><h3>Build & Iterate</h3><p>Development begins with regular updates. You'll see progress at key milestones and have opportunities to give feedback throughout the build — not just at the end.</p></div></div>
-    <div class="process-step reveal" style="transition-delay:.2s"><div class="step-num">04</div><div class="step-content"><h3>Review & QA</h3><p>Comprehensive testing across devices and environments. I handle app testing and quality assurance before anything goes live — no rushed deployments.</p></div></div>
-    <div class="process-step reveal" style="transition-delay:.25s"><div class="step-num">05</div><div class="step-content"><h3>Delivery & Support</h3><p>You receive the final product, full source code, and documentation. Post-launch support is included in all packages — you won't be left alone after handoff.</p></div></div>
-  </div>
-</section>
- 
-<div class="cta-section" id="contact">
-  <div class="reveal">
-    <h2>Ready to build<br>something <span>great?</span></h2>
-    <p class="cta-sub">Send me an email or connect on LinkedIn. I respond within 24 hours.<br>English 🇬🇧 · Arabic 🇪🇬 · German 🇩🇪</p>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:12px;flex-shrink:0" class="reveal" style="transition-delay:.2s">
-    <a href="mailto:zeyadmaeen1@gmail.com" class="btn-primary">Email Me →</a>
-    <a href="https://linkedin.com/in/zezomaeen" target="_blank" class="btn-ghost">LinkedIn ↗</a>
-  </div>
-</div>
- 
-<footer>
-  <div>© 2025 Zeyad Maeen — Freelance Software Engineer</div>
-  <div><a href="https://levihackermanshort.github.io/Portfolio/" target="_blank">Portfolio ↗</a> &nbsp;·&nbsp; <a href="mailto:zeyadmaeen1@gmail.com">zeyadmaeen1@gmail.com</a></div>
-</footer>
- 
-<script>
-/* ── PARTICLE CANVAS ─────────────────────────────────── */
-const canvas = document.getElementById('particle-canvas');
-const ctx = canvas.getContext('2d');
-let W, H, mouse = {x:-9999,y:-9999};
-const particles = [];
- 
-function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
-resize();
-window.addEventListener('resize', resize);
- 
-class Particle {
-  constructor(){ this.reset(true); }
-  reset(init){
-    this.x = Math.random()*W; this.y = init ? Math.random()*H : (Math.random()>.5 ? -5 : H+5);
-    this.size = Math.random()*1.5+.3;
-    this.vx = (Math.random()-.5)*.4; this.vy = (Math.random()-.5)*.4;
-    this.opacity = Math.random()*.5+.1;
-    this.hue = Math.random()>.65 ? 280 : 190;
-  }
-  update(){
-    this.x+=this.vx; this.y+=this.vy;
-    const dx=this.x-mouse.x, dy=this.y-mouse.y, d=Math.hypot(dx,dy);
-    if(d<120){ const f=(120-d)/120; this.x+=dx/d*f*2; this.y+=dy/d*f*2; }
-    if(this.x<-10||this.x>W+10||this.y<-10||this.y>H+10) this.reset(false);
-  }
-  draw(){
-    ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
-    ctx.fillStyle=`hsla(${this.hue},100%,70%,${this.opacity})`; ctx.fill();
-  }
-}
-for(let i=0;i<120;i++) particles.push(new Particle());
- 
-function drawLines(){
-  for(let i=0;i<particles.length;i++)
-    for(let j=i+1;j<particles.length;j++){
-      const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y, d=Math.hypot(dx,dy);
-      if(d<80){ ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.strokeStyle=`rgba(0,229,255,${.06*(1-d/80)})`; ctx.lineWidth=.5; ctx.stroke(); }
-    }
-}
-function tick(){ ctx.clearRect(0,0,W,H); drawLines(); particles.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(tick); }
-tick();
- 
-window.addEventListener('mousemove', e=>{mouse.x=e.clientX; mouse.y=e.clientY;});
- 
-/* ── CUSTOM CURSOR ──────────────────────────────────── */
-const cur=document.getElementById('cursor'), ring=document.getElementById('cursor-ring');
-let cx=0,cy=0,rx=0,ry=0;
-window.addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY;});
-(function animCursor(){ cur.style.left=cx+'px'; cur.style.top=cy+'px'; rx+=(cx-rx)*.12; ry+=(cy-ry)*.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animCursor); })();
- 
-document.querySelectorAll('a,button,.tech-pill,.tag,.service-card,.package-card').forEach(el=>{
-  el.addEventListener('mouseenter',()=>{cur.style.width='6px';cur.style.height='6px';cur.style.opacity='.5';document.body.classList.add('cursor-big');});
-  el.addEventListener('mouseleave',()=>{cur.style.width='12px';cur.style.height='12px';cur.style.opacity='1';document.body.classList.remove('cursor-big');});
-});
- 
-/* ── SERVICE CARD LIGHT FOLLOW ───────────────────────── */
-document.querySelectorAll('.service-card').forEach(card=>{
-  card.addEventListener('mousemove',e=>{
-    const r=card.getBoundingClientRect();
-    card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100).toFixed(1)+'%');
-    card.style.setProperty('--my',((e.clientY-r.top)/r.height*100).toFixed(1)+'%');
-  });
-});
- 
-/* ── NAV SCROLL ──────────────────────────────────────── */
-window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>50));
- 
-/* ── TYPEWRITER ──────────────────────────────────────── */
-const phrases=['clean, scalable web apps.','AI-powered products.','beautiful user experiences.','robust backend systems.','data-driven dashboards.'];
-let pi=0,ci=0,del=false;
-const tw=document.getElementById('typewriter');
-function type(){
-  const p=phrases[pi];
-  if(!del){ tw.textContent=p.slice(0,++ci); if(ci===p.length){del=true;setTimeout(type,1800);return;} }
-  else { tw.textContent=p.slice(0,--ci); if(ci===0){del=false;pi=(pi+1)%phrases.length;setTimeout(type,400);return;} }
-  setTimeout(type,del?40:65);
-}
-type();
- 
-/* ── SCROLL REVEAL ───────────────────────────────────── */
-new IntersectionObserver((entries)=>{
-  entries.forEach(e=>{
-    if(e.isIntersecting){
-      e.target.classList.add('visible');
-      e.target.querySelectorAll('.pkg-features li').forEach((li,i)=>setTimeout(()=>li.classList.add('shown'),i*80));
-    }
-  });
-},{threshold:.1,rootMargin:'0px 0px -40px 0px'}).observe.bind(
-  new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');e.target.querySelectorAll('.pkg-features li').forEach((li,i)=>setTimeout(()=>li.classList.add('shown'),i*80));}});},{threshold:.1,rootMargin:'0px 0px -40px 0px'})
-);
- 
-// cleaner version:
-const revObs = new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting) return;
-    e.target.classList.add('visible');
-    e.target.querySelectorAll('.pkg-features li').forEach((li,i)=>setTimeout(()=>li.classList.add('shown'),i*80));
-  });
-},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
-document.querySelectorAll('.reveal,.reveal-left').forEach(el=>revObs.observe(el));
- 
-/* ── COUNT UP ────────────────────────────────────────── */
-new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting) return;
-    const el=e.target, target=+el.dataset.target; let cur=0;
-    const t=setInterval(()=>{ cur=Math.min(cur+target/40,target); el.textContent=Math.floor(cur); if(cur>=target)clearInterval(t); },35);
-    countObs.unobserve(el);
-  });
-},{threshold:.5});
- 
-const countObs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting) return;
-    const el=e.target,target=+el.dataset.target; let n=0;
-    const t=setInterval(()=>{ n=Math.min(n+target/40,target); el.textContent=Math.floor(n); if(n>=target)clearInterval(t); },35);
-    countObs.unobserve(el);
-  });
-},{threshold:.5});
-document.querySelectorAll('.count-up').forEach(el=>countObs.observe(el));
- 
-/* ── PACKAGE CARD 3D TILT ────────────────────────────── */
-document.querySelectorAll('.package-card').forEach(card=>{
-  card.addEventListener('mousemove',e=>{
-    const r=card.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
-    card.style.transform=`translateY(-6px) rotateX(${-y*6}deg) rotateY(${x*6}deg) scale(1.01)`;
-    card.style.transition='box-shadow .3s,border-color .3s';
-  });
-  card.addEventListener('mouseleave',()=>{ card.style.transform=''; card.style.transition='transform .6s cubic-bezier(.16,1,.3,1),box-shadow .3s,border-color .3s'; });
-});
- 
-/* ── TECH PILLS STAGGER ──────────────────────────────── */
-new IntersectionObserver(entries=>{
-  entries.forEach(e=>{
-    if(!e.isIntersecting) return;
-    e.target.querySelectorAll('.tech-pill').forEach((p,i)=>{
-      p.style.opacity='0'; p.style.transform='translateY(15px)';
-      setTimeout(()=>{ p.style.transition=`opacity .4s ease ${i*30}ms, transform .4s ease ${i*30}ms`; p.style.opacity='1'; p.style.transform='translateY(0)'; },50);
-    });
-  });
-},{threshold:.2}).observe(document.querySelector('.tech-grid'));
-</script>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // GSAP ScrollTrigger setup
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Cursor glow effect
+        const cursorGlow = document.getElementById('cursorGlow');
+        document.addEventListener('mousemove', (e) => {
+            cursorGlow.style.left = e.clientX + 'px';
+            cursorGlow.style.top = e.clientY + 'px';
+        });
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('glass-card', 'border-b', 'border-gray-800');
+            } else {
+                navbar.classList.remove('glass-card', 'border-b', 'border-gray-800');
+            }
+        });
+
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Stats counter animation
+        const stats = document.querySelectorAll('.stat-number');
+        stats.forEach(stat => {
+            const target = parseInt(stat.getAttribute('data-target'));
+            gsap.to(stat, {
+                innerHTML: target,
+                duration: 2,
+                snap: { innerHTML: 1 },
+                scrollTrigger: {
+                    trigger: stat,
+                    start: 'top 80%',
+                    once: true
+                }
+            });
+        });
+
+        // Scroll animations for sections
+        gsap.utils.toArray('.service-card').forEach((card, i) => {
+            gsap.from(card, {
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top 85%',
+                },
+                y: 50,
+                opacity: 0,
+                duration: 0.6,
+                delay: i * 0.1
+            });
+        });
+
+        // Pricing plan selection
+        function selectPlan(plan) {
+            const select = document.getElementById('planSelect');
+            select.value = plan;
+            document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+            showToast(`${plan.charAt(0).toUpperCase() + plan.slice(1)} plan selected! Fill out the form to continue.`);
+        }
+
+        // Form submission
+        document.getElementById('contactForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            showToast('Thank you! I will get back to you within 24 hours at zeyadmaeen1@gmail.com');
+            e.target.reset();
+        });
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+        });
+
+        // Parallax effect for hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.grid-bg');
+            if (parallax) {
+                parallax.style.transform = `translateY(${scrolled * 0.5}px)`;
+            }
+        });
+    </script>
 </body>
 </html>
